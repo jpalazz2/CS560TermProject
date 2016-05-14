@@ -9,7 +9,7 @@ OBJ_FILES := \
 
 CXX := g++
 CXXFLAGS := -std=c++11 -Wall -Wextra -Wpedantic `pkg-config --cflags glfw3`
-LINKLIBRARIES := `pkg-config --libs glfw3`
+LINKLIBRARIES := `pkg-config --libs glfw3` -framework OpenGL
 
 $(EXECUTABLE): $(OBJ_FILES)
 	$(CXX) $(CXXFLAGS) $(OBJ_FILES) -o $(EXECUTABLE) $(LINKLIBRARIES)
