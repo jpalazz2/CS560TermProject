@@ -1,11 +1,9 @@
 TARGET := main
 EXECUTABLE := termproject
 
-SRC_FILES := \
-	main.cpp \
-
 OBJ_FILES := \
-	main.o
+	main.o \
+	keyboard.o
 
 CXX := g++
 CXXFLAGS := -std=c++11 -Wall -Wextra -Wpedantic `pkg-config --cflags glfw3`
@@ -20,4 +18,5 @@ clean:
 depend:
 	$(CXX) $(CXXFLAGS) -MM *.cpp
 
-main.o: main.cpp 
+keyboard.o: keyboard.cpp keyboard.hpp
+main.o: main.cpp keyboard.hpp

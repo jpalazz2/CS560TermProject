@@ -2,9 +2,18 @@
 #include <cstdlib>
 #include <iostream>
 
-void errorCallback(int error, const char * description) {
+#include "keyboard.hpp"
+
+static Keyboard kbd{};
+
+void errorCallback(int, const char * description) {
 	std::cerr << description << std::endl;
 }
+
+void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+	kbd.process(window, key, scancode, action, mods);
+}
+
 
 int main(void) {
 
@@ -13,7 +22,7 @@ int main(void) {
 	}
 
 	glfwSetErrorCallback(errorCallback);
-	GLFWwindow* window = glfwCreateWindow(640, 480, "CS 560 Term Project", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(1280, 800, "CS 560 Term Project", NULL, NULL);
 	if (!window) {
 		std::cerr << "Failed to create the window!" << std::endl;
 		glfwTerminate();
@@ -21,9 +30,13 @@ int main(void) {
 	}
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1);
+	glfwSetKeyCallback(window, keyboardCallback);
 
 	while (!glfwWindowShouldClose(window))
 	{
+		/*
+		 * Setup the orthographic projection
+		 */
 		float ratio;
 		int width, height;
 		glfwGetFramebufferSize(window, &width, &height);
@@ -33,6 +46,7 @@ int main(void) {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		glOrtho(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
+
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		glRotatef((float) glfwGetTime() * 50.f, 0.f, 0.f, 1.f);
