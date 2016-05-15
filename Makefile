@@ -7,7 +7,7 @@ OBJ_FILES := \
 	shader.o
 
 CXX := clang++
-CXXFLAGS := -std=c++11 -Wall -Wextra -Wpedantic `pkg-config --cflags glfw3 glew` 
+CXXFLAGS := -std=c++11 -Wall -Wextra -Wpedantic `pkg-config --cflags glfw3 glew` -I/usr/local/include
 LINKLIBRARIES := `pkg-config --libs glfw3 glew` -framework OpenGL
 
 $(EXECUTABLE): $(OBJ_FILES)
