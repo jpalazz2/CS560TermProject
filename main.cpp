@@ -1,5 +1,10 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include <cstdlib>
 #include <iostream>
 
@@ -47,10 +52,10 @@ int main(void) {
 	glViewport(0, 0, width, height);
 
 	GLfloat vertices[] = {
-		0.5f,  0.5f, 0.0f,  // Top Right
+		0.5f,  0.5f, 2.0f,  // Top Right
 		0.5f, -0.5f, 0.0f,  // Bottom Right
 		-0.5f, -0.5f, 0.0f,  // Bottom Left
-		-0.5f,  0.5f, 0.0f   // Top Left 
+		-0.5f,  0.5f, 2.0f   // Top Left 
 	};
 	GLuint indices[] = {  // Note that we start from 0!
 		0, 1, 3,  // First Triangle
@@ -83,10 +88,27 @@ int main(void) {
 		 */
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
+
+    // Shader
 		glUseProgram(s.shaderProgram);
+
+    // Projection matrices
+    glm::mat4 model, view, projection;
+    view = glm::lookAt(glm::vec3(0.0, 0.0, -5.0), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
+    projection = glm::perspective(45.0f, 1280 / 800.0f, 0.1f, 100.0f);
+
+    GLint modelLoc = glGetUniformLocation(s.shaderProgram, "model");
+    GLint viewLoc = glGetUniformLocation(s.shaderProgram, "view");
+    GLint projectionLoc = glGetUniformLocation(s.shaderProgram, "projection");
+
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
