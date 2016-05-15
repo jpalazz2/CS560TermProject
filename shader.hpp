@@ -7,6 +7,9 @@
 #include <iostream>
 #include <cstdlib>
 
+/*
+ * Class to handle loading in our custom shaders.
+ */
 class Shader {
 	public:
 		Shader() = delete;

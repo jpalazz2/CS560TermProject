@@ -7,8 +7,10 @@ Model::Model(const char *fileName) {
 		std::exit(EXIT_FAILURE);
 	}
 	std::string line;
+	// Vectors to store the obj file information
 	std::vector<glm::vec3> objVertices;
 	std::vector<glm::vec3> faces;
+	// Parse the file
 	while (std::getline(inFile, line)) {
 		std::istringstream ss(line);
 		std::string operation;
@@ -42,6 +44,7 @@ Model::Model(const char *fileName) {
 	indices = new GLuint[3 * faces.size()];
 	verticesSize = 3 * objVertices.size();
 	indicesSize = 3 * faces.size();
+	// Load the data into arrays for glDrawElements();
 	for (std::size_t i = 0; i < objVertices.size(); i++) {
 		glm::vec3 vec = objVertices[i];
 		vertices[3 * i] = vec.x;
