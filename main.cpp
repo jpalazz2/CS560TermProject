@@ -45,7 +45,7 @@ int main(void) {
 	glfwSwapInterval(1);
 	glfwSetKeyCallback(window, keyboardCallback);
 
-	Shader s("shader.frag","shader.vert");
+	Shader s("shader/shader.frag","shader/shader.vert");
 
 	int width, height;
 	glfwGetFramebufferSize(window, &width, &height);
