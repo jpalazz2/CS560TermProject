@@ -3,6 +3,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 #include <cstdlib>
@@ -23,6 +24,7 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
 }
 
 glm::vec3 lightPos{-1.5f, 0.5f, -1.0f};
+glm::vec3 cameraPos{0.0f, 0.0f, -5.0f};
 
 int main(void) {
 	if (!glfwInit()) {
@@ -116,6 +118,8 @@ int main(void) {
 
 	// While the window should still be showing...
 	while (!glfwWindowShouldClose(window)) {
+		float rotateAmount = glfwGetTime();
+		glm::vec3 renderLightPos = glm::rotateY(lightPos, rotateAmount);
 		// Setup the orthographic projection
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -125,7 +129,7 @@ int main(void) {
 
     // Projection matrices
     glm::mat4 model, view, projection;
-    view = glm::lookAt(glm::vec3(0.0, 0.0, -5.0), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
+    view = glm::lookAt(cameraPos, glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
     projection = glm::perspective(45.0f, 1280 / 800.0f, 0.1f, 100.0f);
 
 		// Where are these variables stored in memory
@@ -135,7 +139,11 @@ int main(void) {
 
 		// Tell the shader where our light is located
 		GLint lightPosLoc = glGetUniformLocation(modelShader.shaderProgram, "lightPos");
-		glUniform3f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z);
+		glUniform3f(lightPosLoc, renderLightPos.x, renderLightPos.y, renderLightPos.z);
+
+		// Where are we viewing from? (for specular lighting)
+	  GLint viewPosLoc = glGetUniformLocation(modelShader.shaderProgram, "viewPos");
+	  glUniform3f(viewPosLoc, cameraPos.x, cameraPos.y, cameraPos.z);
 
     // Lets set some color information
     GLint sphereColorLoc = glGetUniformLocation(modelShader.shaderProgram, "objectColor");
@@ -163,7 +171,7 @@ int main(void) {
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
     model = glm::mat4();
-    model = glm::translate(model, lightPos);
+    model = glm::translate(model, renderLightPos);
     model = glm::scale(model, glm::vec3(0.3f));
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
