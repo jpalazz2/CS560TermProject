@@ -18,7 +18,7 @@ Sphere::Sphere(const char *fileName, const glm::vec3 &center): center(center) {
 				std::cerr << "Bad object file! " << fileName << std::endl;
 				std::exit(EXIT_FAILURE);
 			}
-			vertices.push_back(glm::vec3{a, b, c});
+			vertices.push_back(glm::vec3{a, b, c} + center);
 		} else if (!operation.compare("f")) {
 			std::string a, b, c;
 			if (!(ss >> a >> b >> c)) {
