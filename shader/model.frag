@@ -2,6 +2,7 @@
 
 struct Circle {
 	vec3 pos;
+	vec3 color;
 	float rad;
 };
 

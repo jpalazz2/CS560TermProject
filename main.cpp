@@ -154,12 +154,16 @@ int main(void) {
 		glBindVertexArray(0);
 
 		GLint posLoc = glGetUniformLocation(modelShader.shaderProgram, "circles[0].pos");
+		GLint colorLoc = glGetUniformLocation(modelShader.shaderProgram, "circles[0].color");
 		GLint radLoc = glGetUniformLocation(modelShader.shaderProgram, "circles[0].rad");
 		glUniform3f(posLoc, -1.0f, 0.0f, 0.0f);
-		glUniform1f(radLoc, 1.4f);
+		glUniform3f(colorLoc, 1.0f, 0.0f, 0.0f);
+		glUniform1f(radLoc, 0.7f);
 		posLoc = glGetUniformLocation(modelShader.shaderProgram, "circles[1].pos");
+		colorLoc = glGetUniformLocation(modelShader.shaderProgram, "circles[1].pos");
 		radLoc = glGetUniformLocation(modelShader.shaderProgram, "circles[1].rad");
 		glUniform3f(posLoc, 1.0f, 0.0f, 0.0f);
+		glUniform3f(colorLoc, 0.0f, 1.0f, 0.0f);
 		glUniform1f(radLoc, 0.7f);
 
 		// Now we need to draw the light object
