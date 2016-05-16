@@ -7,10 +7,6 @@ Sphere::Sphere(const char *fileName, const glm::vec3 &center): center(center) {
 		std::exit(EXIT_FAILURE);
 	}
 	std::string line;
-	std::vector<glm::vec3> vertices;
-	std::vector<glm::vec3> faces;
-	std::vector<glm::vec3> normals;
-	std::unordered_map<int, int> vertexToNormalMap;
 	// Parse the file
 	while (std::getline(inFile, line)) {
 		std::istringstream ss(line);
@@ -54,13 +50,4 @@ Sphere::Sphere(const char *fileName, const glm::vec3 &center): center(center) {
 	assert(vertices.size() > 0);
 	assert(normals.size() > 0);
 	assert(vertexToNormalMap.size() > 0);
-	for (auto face : faces) {
-		Triangle t;
-		t.vertices[0] = vertices[face.x];
-		t.normals[0] = normals[vertexToNormalMap[face.x]];
-		t.vertices[1] = vertices[face.y];
-		t.normals[1] = normals[vertexToNormalMap[face.y]];
-		t.vertices[2] = vertices[face.z];
-		t.normals[2] = normals[vertexToNormalMap[face.z]];
-	}
 }

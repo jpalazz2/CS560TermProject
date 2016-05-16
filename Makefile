@@ -22,5 +22,5 @@ depend:
 
 shader.o: shader.hpp shader.cpp
 keyboard.o: keyboard.cpp keyboard.hpp
-sphere.o: sphere.hpp sphere.cpp triangle.hpp model.hpp
+sphere.o: sphere.hpp sphere.cpp model.hpp
 main.o: main.cpp keyboard.hpp shader.hpp sphere.hpp

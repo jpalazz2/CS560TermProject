@@ -2,7 +2,6 @@
 #define XYZ_SPHERE_HPP_
 
 #include "model.hpp"
-#include "triangle.hpp"
 #include <vector>
 #include <unordered_map>
 #include <fstream>
@@ -18,8 +17,11 @@ class Sphere : public Model {
 		glm::vec3& intersect(const Ray&) {};
 
 	public:
-		std::vector<Triangle> triangles;
+		std::vector<glm::vec3> vertices;
+		std::vector<glm::vec3> faces;
+		std::vector<glm::vec3> normals;
+		std::unordered_map<int, int> vertexToNormalMap;
 		glm::vec3 center;
-};t
+};
 
 #endif
