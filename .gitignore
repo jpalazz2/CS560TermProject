@@ -2,6 +2,8 @@
 *.o
 *.ko
 *.elf
+*.obj
+*.DS_Store
 
 # Precompiled Headers
 *.gch
