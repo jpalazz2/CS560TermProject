@@ -50,4 +50,5 @@ Sphere::Sphere(const char *fileName, const glm::vec3 &center): center(center) {
 	assert(vertices.size() > 0);
 	assert(normals.size() > 0);
 	assert(vertexToNormalMap.size() > 0);
+	colors.reserve(vertices.size());
 }
