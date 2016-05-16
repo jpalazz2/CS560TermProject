@@ -160,7 +160,7 @@ int main(void) {
 		posLoc = glGetUniformLocation(modelShader.shaderProgram, "circles[1].pos");
 		radLoc = glGetUniformLocation(modelShader.shaderProgram, "circles[1].rad");
 		glUniform3f(posLoc, 1.0f, 0.0f, 0.0f);
-		glUniform1f(radLoc, 1.4f);
+		glUniform1f(radLoc, 0.7f);
 
 		// Now we need to draw the light object
 		lightShader.use();
