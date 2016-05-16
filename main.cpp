@@ -131,10 +131,10 @@ int main(void) {
 	  glUniform3f(viewPosLoc, cameraPos.x, cameraPos.y, cameraPos.z);
 
     // Lets set some color information
-    GLint sphereColorLoc = glGetUniformLocation(modelShader.shaderProgram, "objectColor");
     GLint lightColorLoc = glGetUniformLocation(modelShader.shaderProgram, "lightColor");
-    glUniform3f(sphereColorLoc, 1.0f, 0.5f, 0.31f);
+    GLint objectColorLoc = glGetUniformLocation(modelShader.shaderProgram, "objectColor");
     glUniform3f(lightColorLoc, 1.0f, 1.0f, 1.0f);
+    glUniform3f(objectColorLoc, 0.0f, 1.0f, 0.0f);
 
 		// Copy our projection matrix information into the correct locations in memory
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
@@ -157,13 +157,13 @@ int main(void) {
 		GLint colorLoc = glGetUniformLocation(modelShader.shaderProgram, "circles[0].color");
 		GLint radLoc = glGetUniformLocation(modelShader.shaderProgram, "circles[0].rad");
 		glUniform3f(posLoc, -1.0f, 0.0f, 0.0f);
-		glUniform3f(colorLoc, 1.0f, 0.0f, 0.0f);
+		glUniform4f(colorLoc, 1.0f, 0.0f, 0.0f, 1.0f);
 		glUniform1f(radLoc, 0.7f);
 		posLoc = glGetUniformLocation(modelShader.shaderProgram, "circles[1].pos");
 		colorLoc = glGetUniformLocation(modelShader.shaderProgram, "circles[1].pos");
 		radLoc = glGetUniformLocation(modelShader.shaderProgram, "circles[1].rad");
 		glUniform3f(posLoc, 1.0f, 0.0f, 0.0f);
-		glUniform3f(colorLoc, 0.0f, 1.0f, 0.0f);
+		glUniform4f(colorLoc, 0.0f, 1.0f, 0.0f, 1.0f);
 		glUniform1f(radLoc, 0.7f);
 
 		// Now we need to draw the light object
