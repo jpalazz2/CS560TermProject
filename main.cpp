@@ -23,7 +23,7 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
 	kbd.process(window, key, scancode, action, mods);
 }
 
-glm::vec3 lightPos{-1.5f, 0.5f, -1.0f};
+glm::vec3 lightPos{0.0f, 5.0f, -5.0f};
 glm::vec3 cameraPos{0.0f, 0.0f, -5.0f};
 
 int main(void) {
@@ -62,19 +62,6 @@ int main(void) {
 	int width, height;
 	glfwGetFramebufferSize(window, &width, &height);
 	glViewport(0, 0, width, height);
-
-	/*
-	GLfloat vertices[] = {
-		0.5f,  0.5f, 2.0f,  // Top Right
-		0.5f, -0.5f, 0.0f,  // Bottom Right
-		-0.5f, -0.5f, 0.0f,  // Bottom Left
-		-0.5f,  0.5f, 2.0f   // Top Left 
-	};
-	GLuint indices[] = {  // Note that we start from 0!
-		0, 1, 3,  // First Triangle
-		1, 2, 3   // Second Triangle
-	};
-	*/
 
 	// Load in a sphere object
 	Model sphere("objects/sphere.obj");
@@ -118,8 +105,6 @@ int main(void) {
 
 	// While the window should still be showing...
 	while (!glfwWindowShouldClose(window)) {
-		float rotateAmount = glfwGetTime();
-		glm::vec3 renderLightPos = glm::rotateY(lightPos, rotateAmount);
 		// Setup the orthographic projection
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -139,7 +124,7 @@ int main(void) {
 
 		// Tell the shader where our light is located
 		GLint lightPosLoc = glGetUniformLocation(modelShader.shaderProgram, "lightPos");
-		glUniform3f(lightPosLoc, renderLightPos.x, renderLightPos.y, renderLightPos.z);
+		glUniform3f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z);
 
 		// Where are we viewing from? (for specular lighting)
 	  GLint viewPosLoc = glGetUniformLocation(modelShader.shaderProgram, "viewPos");
@@ -152,14 +137,30 @@ int main(void) {
     glUniform3f(lightColorLoc, 1.0f, 1.0f, 1.0f);
 
 		// Copy our projection matrix information into the correct locations in memory
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
 		// Use our vertex array object
 		glBindVertexArray(VAO);
+		model = glm::translate(model, glm::vec3{1.0, 0.0, 0.0});
+		model = glm::scale(model, glm::vec3{0.7f});
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawElements(GL_TRIANGLES, sphere.indicesSize, GL_UNSIGNED_INT, 0);
+		model = glm::mat4();
+		model = glm::translate(model, glm::vec3{-1.0, 0.0, 0.0});
+		model = glm::scale(model, glm::vec3{0.7f});
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawElements(GL_TRIANGLES, sphere.indicesSize, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
+
+		GLint posLoc = glGetUniformLocation(modelShader.shaderProgram, "circles[0].pos");
+		GLint radLoc = glGetUniformLocation(modelShader.shaderProgram, "circles[0].rad");
+		glUniform3f(posLoc, -1.0f, 0.0f, 0.0f);
+		glUniform1f(radLoc, 1.4f);
+		posLoc = glGetUniformLocation(modelShader.shaderProgram, "circles[1].pos");
+		radLoc = glGetUniformLocation(modelShader.shaderProgram, "circles[1].rad");
+		glUniform3f(posLoc, 1.0f, 0.0f, 0.0f);
+		glUniform1f(radLoc, 1.4f);
 
 		// Now we need to draw the light object
 		lightShader.use();
@@ -171,7 +172,7 @@ int main(void) {
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
     model = glm::mat4();
-    model = glm::translate(model, renderLightPos);
+    model = glm::translate(model, lightPos);
     model = glm::scale(model, glm::vec3(0.3f));
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 

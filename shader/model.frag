@@ -1,5 +1,10 @@
 #version 330 core
 
+struct Circle {
+	vec3 pos;
+	float rad;
+};
+
 out vec4 color;
 
 in vec3 Normal;
@@ -9,6 +14,7 @@ uniform vec3 objectColor;
 uniform vec3 lightColor;
 uniform vec3 lightPos;
 uniform vec3 viewPos;
+uniform Circle circles[2];
 
 void main() {
 	float ambientStrength = 0.1f;
