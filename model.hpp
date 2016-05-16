@@ -1,35 +1,16 @@
 #ifndef XYZ_MODEL_HPP_
 #define XYZ_MODEL_HPP_
 
-#include <string>
-#include <sstream>
-#include <fstream>
-#include <vector>
-#include <cstdlib>
-#include <iostream>
-#include <cassert>
-#include <map>
 #include <glm/glm.hpp>
-#include <GLFW/glfw3.h>
 
-/*
- * Load in a model from an obj file for rendering.
- * 
- * Makes the following assumptions about the format of the obj file:
- * - Drawn using triangle polygons (i.e. 3 points per face)
- * - Face format is as follows: f x/x/x x/x/x x/x/x
- *
- * Other formats won't parse properly
- */
+struct Ray {
+	glm::vec3 origin;
+	glm::vec3 direction;
+};
+
 class Model {
 	public:
-		Model() = delete;
-		Model(const char *);
-		~Model();
-		GLfloat *vertices;
-		int verticesSize;
-		GLuint *indices;
-		int indicesSize;
+		virtual glm::vec3& intersect(const Ray&) =0;
 };
 
 #endif

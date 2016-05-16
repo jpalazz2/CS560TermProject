@@ -11,7 +11,7 @@
 
 #include "keyboard.hpp"
 #include "shader.hpp"
-#include "model.hpp"
+#include "sphere.hpp"
 
 static Keyboard kbd{};
 
@@ -63,10 +63,10 @@ int main(void) {
 	glfwGetFramebufferSize(window, &width, &height);
 	glViewport(0, 0, width, height);
 
-	// Load in a sphere object
-	Model sphere("objects/sphere.obj");
+	Sphere sphere1("objects/sphere.obj", glm::vec3{0.0f, 0.0f, 0.0f});
 
 	// Vertex buffer and array objects in the CPU for use with our shader
+	/*
 	GLuint VBO, VAO, EBO, lightVAO;
 	glGenVertexArrays(1, &VAO);
 	glGenVertexArrays(1, &lightVAO);
@@ -102,6 +102,7 @@ int main(void) {
 	// Unbind all buffers for safety
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	*/
 
 	// While the window should still be showing...
 	while (!glfwWindowShouldClose(window)) {
@@ -109,6 +110,7 @@ int main(void) {
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		/*
     // Tell OpenGL to use our shader
 		modelShader.use();
 
@@ -157,13 +159,13 @@ int main(void) {
 		GLint colorLoc = glGetUniformLocation(modelShader.shaderProgram, "circles[0].color");
 		GLint radLoc = glGetUniformLocation(modelShader.shaderProgram, "circles[0].rad");
 		glUniform3f(posLoc, -1.0f, 0.0f, 0.0f);
-		glUniform4f(colorLoc, 1.0f, 0.0f, 0.0f, 1.0f);
+		glUniform3f(colorLoc, 1.0f, 0.0f, 0.0f);
 		glUniform1f(radLoc, 0.7f);
 		posLoc = glGetUniformLocation(modelShader.shaderProgram, "circles[1].pos");
 		colorLoc = glGetUniformLocation(modelShader.shaderProgram, "circles[1].pos");
 		radLoc = glGetUniformLocation(modelShader.shaderProgram, "circles[1].rad");
 		glUniform3f(posLoc, 1.0f, 0.0f, 0.0f);
-		glUniform4f(colorLoc, 0.0f, 1.0f, 0.0f, 1.0f);
+		glUniform3f(colorLoc, 0.0f, 1.0f, 0.0f);
 		glUniform1f(radLoc, 0.7f);
 
 		// Now we need to draw the light object
@@ -183,6 +185,7 @@ int main(void) {
     glBindVertexArray(lightVAO);
 		glDrawElements(GL_TRIANGLES, sphere.indicesSize, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
+		*/
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

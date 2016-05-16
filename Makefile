@@ -5,7 +5,7 @@ OBJ_FILES := \
 	main.o \
 	keyboard.o \
 	shader.o \
-	model.o
+	sphere.o
 
 CXX := clang++
 CXXFLAGS := -std=c++11 -Wall -Wextra -Wpedantic `pkg-config --cflags glfw3 glew` -I/usr/local/include
@@ -22,5 +22,5 @@ depend:
 
 shader.o: shader.hpp shader.cpp
 keyboard.o: keyboard.cpp keyboard.hpp
-model.o: model.hpp model.cpp
-main.o: main.cpp keyboard.hpp shader.hpp model.hpp
+sphere.o: sphere.hpp sphere.cpp triangle.hpp model.hpp
+main.o: main.cpp keyboard.hpp shader.hpp sphere.hpp
