@@ -15,6 +15,8 @@ class Sphere : public Model {
 		Sphere() = delete;
 		Sphere(const char *, const glm::vec3&);
 		glm::vec3& intersect(const Ray&) {};
+		void buildVertexArray(GLfloat *);
+		void buildIndexArray(GLuint *);
 
 	public:
 		std::vector<glm::vec3> vertices;

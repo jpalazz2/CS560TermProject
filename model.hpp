@@ -2,6 +2,7 @@
 #define XYZ_MODEL_HPP_
 
 #include <glm/glm.hpp>
+#include <GLFW/glfw3.h>
 
 struct Ray {
 	glm::vec3 origin;

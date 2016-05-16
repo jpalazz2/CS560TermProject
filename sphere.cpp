@@ -52,3 +52,24 @@ Sphere::Sphere(const char *fileName, const glm::vec3 &center): center(center) {
 	assert(vertexToNormalMap.size() > 0);
 	colors.reserve(vertices.size());
 }
+
+void Sphere::buildVertexArray(GLfloat *arr) {
+	for (std::size_t i = 0; i < vertices.size(); i++) {
+		glm::vec3 vert = vertices[i];
+		glm::vec3 color = colors[i];
+		arr[6 * i] = vert.x;
+		arr[6 * i + 1] = vert.y;
+		arr[6 * i + 2] = vert.z;
+		arr[6 * i + 3] = color.x;
+		arr[6 * i + 4] = color.y;
+		arr[6 * i + 5] = color.z;
+	}
+}
+
+void Sphere::buildIndexArray(GLuint *arr) {
+	for (std::size_t i = 0; i < faces.size(); i++) {
+		arr[i * 3] = faces[i].x;	
+		arr[i * 3 + 1] = faces[i].y;	
+		arr[i * 3 + 2] = faces[i].z;	
+	}
+}
