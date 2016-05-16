@@ -14,6 +14,7 @@ class Shader {
 	public:
 		Shader() = delete;
 		Shader(const char *, const char *);
+		void use(void) const;
 		GLuint shaderProgram;
 	private:
 		void loadFile(const GLuint &, const char *);

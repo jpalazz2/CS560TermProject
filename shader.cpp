@@ -49,7 +49,12 @@ void Shader::loadFile(const GLuint &shader, const char *fileName) {
 	if (!success) {
 		GLchar info[512];
 		glGetShaderInfoLog(shader, 512, nullptr, info);
-		std::cout << info << std::endl;
+		std::cerr << "Failure in shader " << fileName << std::endl;
+		std::cerr << info << std::endl;
 		std::exit(EXIT_FAILURE);
 	}
+}
+
+void Shader::use(void) const {
+	glUseProgram(shaderProgram);
 }

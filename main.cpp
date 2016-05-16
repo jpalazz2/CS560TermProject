@@ -22,6 +22,7 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
 	kbd.process(window, key, scancode, action, mods);
 }
 
+glm::vec3 lightPos{-1.5f, 0.5f, -1.0f};
 
 int main(void) {
 	if (!glfwInit()) {
@@ -48,8 +49,12 @@ int main(void) {
 	glfwSwapInterval(1);
 	glfwSetKeyCallback(window, keyboardCallback);
 
+	// Otherwise OpenGL doesn't pay attention to depths when drawing 3d objects
+	glEnable(GL_DEPTH_TEST);
+
 	// Load, compile, and link our shaders
-	Shader s("shader/shader.frag", "shader/shader.vert");
+	Shader modelShader("shader/model.frag", "shader/model.vert");
+	Shader lightShader("shader/light.frag", "shader/light.vert");
 
 	// Set a viewport
 	int width, height;
@@ -73,8 +78,9 @@ int main(void) {
 	Model sphere("objects/sphere.obj");
 
 	// Vertex buffer and array objects in the CPU for use with our shader
-	GLuint VBO, VAO, EBO;
+	GLuint VBO, VAO, EBO, lightVAO;
 	glGenVertexArrays(1, &VAO);
+	glGenVertexArrays(1, &lightVAO);
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
 	glBindVertexArray(VAO);
@@ -88,22 +94,34 @@ int main(void) {
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sphere.indicesSize * sizeof(GLuint), sphere.indices, GL_STATIC_DRAW);
 
 	// Tell OpenGL what our vertex data looks like
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
+	// Also tell it how our normal data looks
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(1);
 
-	// Unbind all buffers for safety
+	// Now we need to setup vertex data for the light source
+	glBindVertexArray(lightVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sphere.verticesSize * sizeof(GLfloat), sphere.vertices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sphere.indicesSize * sizeof(GLuint), sphere.indices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+	// Unbind all buffers for safety
 	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	// While the window should still be showing...
 	while (!glfwWindowShouldClose(window)) {
 		// Setup the orthographic projection
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Tell OpenGL to use our shader
-		glUseProgram(s.shaderProgram);
+		modelShader.use();
 
     // Projection matrices
     glm::mat4 model, view, projection;
@@ -111,9 +129,19 @@ int main(void) {
     projection = glm::perspective(45.0f, 1280 / 800.0f, 0.1f, 100.0f);
 
 		// Where are these variables stored in memory
-    GLint modelLoc = glGetUniformLocation(s.shaderProgram, "model");
-    GLint viewLoc = glGetUniformLocation(s.shaderProgram, "view");
-    GLint projectionLoc = glGetUniformLocation(s.shaderProgram, "projection");
+    GLint modelLoc = glGetUniformLocation(modelShader.shaderProgram, "model");
+    GLint viewLoc = glGetUniformLocation(modelShader.shaderProgram, "view");
+    GLint projectionLoc = glGetUniformLocation(modelShader.shaderProgram, "projection");
+
+		// Tell the shader where our light is located
+		GLint lightPosLoc = glGetUniformLocation(modelShader.shaderProgram, "lightPos");
+		glUniform3f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z);
+
+    // Lets set some color information
+    GLint sphereColorLoc = glGetUniformLocation(modelShader.shaderProgram, "objectColor");
+    GLint lightColorLoc = glGetUniformLocation(modelShader.shaderProgram, "lightColor");
+    glUniform3f(sphereColorLoc, 1.0f, 0.5f, 0.31f);
+    glUniform3f(lightColorLoc, 1.0f, 1.0f, 1.0f);
 
 		// Copy our projection matrix information into the correct locations in memory
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
@@ -122,6 +150,24 @@ int main(void) {
 
 		// Use our vertex array object
 		glBindVertexArray(VAO);
+		glDrawElements(GL_TRIANGLES, sphere.indicesSize, GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
+
+		// Now we need to draw the light object
+		lightShader.use();
+
+    modelLoc = glGetUniformLocation(lightShader.shaderProgram, "model");
+    viewLoc = glGetUniformLocation(lightShader.shaderProgram, "view");
+    projectionLoc = glGetUniformLocation(lightShader.shaderProgram, "projection");
+
+    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+    model = glm::mat4();
+    model = glm::translate(model, lightPos);
+    model = glm::scale(model, glm::vec3(0.3f));
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+    glBindVertexArray(lightVAO);
 		glDrawElements(GL_TRIANGLES, sphere.indicesSize, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 
