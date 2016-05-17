@@ -49,7 +49,7 @@ int main(void) {
 	glfwMakeContextCurrent(window);
 	glewExperimental = GL_TRUE;
 	if (glewInit() != GLEW_OK) {
-		std::cerr << "Glew broked" << std::endl;
+		std::cerr << "Glew broke" << std::endl;
 	}
 	glfwSwapInterval(1);
 	glfwSetKeyCallback(window, keyboardCallback);
@@ -67,6 +67,7 @@ int main(void) {
 
 	// Draw a quad that fills the entire viewport
 	// This gets drawn using the normalized device coordinates
+	// We use it as the screen onto which we render the ray traced room
 	GLfloat quadVertices[] = {
 		-1.0f, -1.0f,
 		-1.0f, 1.0f,
