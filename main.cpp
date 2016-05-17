@@ -11,7 +11,6 @@
 
 #include "keyboard.hpp"
 #include "shader.hpp"
-#include "sphere.hpp"
 
 static Keyboard kbd{};
 
@@ -26,6 +25,8 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
 glm::vec3 lightPos{0.0f, 5.0f, -5.0f};
 glm::vec3 cameraPos{0.0f, 0.0f, -5.0f};
 
+int screenWidth = 1280, screenHeight = 800;
+
 int main(void) {
 	if (!glfwInit()) {
 		std::exit(EXIT_FAILURE);
@@ -39,7 +40,7 @@ int main(void) {
 
 	// Create window and set glfw settings
 	glfwSetErrorCallback(errorCallback);
-	GLFWwindow* window = glfwCreateWindow(1280, 800, "CS 560 Term Project", nullptr, nullptr);
+	GLFWwindow* window = glfwCreateWindow(screenWidth, screenHeight, "CS 560 Term Project", nullptr, nullptr);
 	if (!window) {
 		std::cerr << "Failed to create the window!" << std::endl;
 		glfwTerminate();
@@ -47,7 +48,9 @@ int main(void) {
 	}
 	glfwMakeContextCurrent(window);
 	glewExperimental = GL_TRUE;
-	glewInit();
+	if (glewInit() != GLEW_OK) {
+		std::cerr << "Glew broked" << std::endl;
+	}
 	glfwSwapInterval(1);
 	glfwSetKeyCallback(window, keyboardCallback);
 
@@ -55,137 +58,63 @@ int main(void) {
 	glEnable(GL_DEPTH_TEST);
 
 	// Load, compile, and link our shaders
-	Shader modelShader("shader/model.frag", "shader/model.vert");
-	Shader lightShader("shader/light.frag", "shader/light.vert");
+	Shader textureShader("shaders/texture.frag", "shaders/texture.vert");
 
 	// Set a viewport
 	int width, height;
 	glfwGetFramebufferSize(window, &width, &height);
 	glViewport(0, 0, width, height);
 
-	Sphere sphere1("objects/sphere.obj", glm::vec3{0.0f, 0.0f, 0.0f});
+	// Draw a quad that fills the entire viewport
+	// This gets drawn using the normalized device coordinates
+	GLfloat quadVertices[] = {
+		-1.0f, -1.0f,
+		-1.0f, 1.0f,
+		1.0f, -1.0f,
+		1.0f, 1.0f
+	};
 
-	// Vertex buffer and array objects in the CPU for use with our shader
-	/*
-	GLuint VBO, VAO, EBO, lightVAO;
-	glGenVertexArrays(1, &VAO);
-	glGenVertexArrays(1, &lightVAO);
-	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
-	glBindVertexArray(VAO);
-
-	// Write our list of vertices into the VBO buffer
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sphere.verticesSize * sizeof(GLfloat), sphere.vertices, GL_STATIC_DRAW);
-
-	// Write our vertex indices used for drawing into the EBO buffer
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sphere.indicesSize * sizeof(GLuint), sphere.indices, GL_STATIC_DRAW);
-
-	// Tell OpenGL what our vertex data looks like
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
+	GLuint quadVBO, quadVAO;
+	glGenVertexArrays(1, &quadVAO);
+	glGenBuffers(1, &quadVBO);
+	glBindVertexArray(quadVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
-	// Also tell it how our normal data looks
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-	glEnableVertexAttribArray(1);
-
-	// Now we need to setup vertex data for the light source
-	glBindVertexArray(lightVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sphere.verticesSize * sizeof(GLfloat), sphere.vertices, GL_STATIC_DRAW);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sphere.indicesSize * sizeof(GLuint), sphere.indices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
-	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	// Unbind all buffers for safety
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GL_FLOAT), (GLvoid*) 0);
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	*/
+
+	// Lets make a texture to render our scene into
+	GLuint texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, screenWidth, screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	// Create a framebuffer to help us render into the texture
+	GLuint framebuffer;
+	glGenFramebuffers(1, &framebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
 
 	// While the window should still be showing...
 	while (!glfwWindowShouldClose(window)) {
-		// Setup the orthographic projection
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		// Render our scene into the texture
+
+		// Unbind our framebuffer and render our texture as a quad
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		/*
-    // Tell OpenGL to use our shader
-		modelShader.use();
-
-    // Projection matrices
-    glm::mat4 model, view, projection;
-    view = glm::lookAt(cameraPos, glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
-    projection = glm::perspective(45.0f, 1280 / 800.0f, 0.1f, 100.0f);
-
-		// Where are these variables stored in memory
-    GLint modelLoc = glGetUniformLocation(modelShader.shaderProgram, "model");
-    GLint viewLoc = glGetUniformLocation(modelShader.shaderProgram, "view");
-    GLint projectionLoc = glGetUniformLocation(modelShader.shaderProgram, "projection");
-
-		// Tell the shader where our light is located
-		GLint lightPosLoc = glGetUniformLocation(modelShader.shaderProgram, "lightPos");
-		glUniform3f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z);
-
-		// Where are we viewing from? (for specular lighting)
-	  GLint viewPosLoc = glGetUniformLocation(modelShader.shaderProgram, "viewPos");
-	  glUniform3f(viewPosLoc, cameraPos.x, cameraPos.y, cameraPos.z);
-
-    // Lets set some color information
-    GLint lightColorLoc = glGetUniformLocation(modelShader.shaderProgram, "lightColor");
-    GLint objectColorLoc = glGetUniformLocation(modelShader.shaderProgram, "objectColor");
-    glUniform3f(lightColorLoc, 1.0f, 1.0f, 1.0f);
-    glUniform3f(objectColorLoc, 0.0f, 1.0f, 0.0f);
-
-		// Copy our projection matrix information into the correct locations in memory
-    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-
-		// Use our vertex array object
-		glBindVertexArray(VAO);
-		model = glm::translate(model, glm::vec3{1.0, 0.0, 0.0});
-		model = glm::scale(model, glm::vec3{0.7f});
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		glDrawElements(GL_TRIANGLES, sphere.indicesSize, GL_UNSIGNED_INT, 0);
-		model = glm::mat4();
-		model = glm::translate(model, glm::vec3{-1.0, 0.0, 0.0});
-		model = glm::scale(model, glm::vec3{0.7f});
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		glDrawElements(GL_TRIANGLES, sphere.indicesSize, GL_UNSIGNED_INT, 0);
+		glDisable(GL_DEPTH_TEST);
+		textureShader.use();
+		glBindVertexArray(quadVAO);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 		glBindVertexArray(0);
-
-		GLint posLoc = glGetUniformLocation(modelShader.shaderProgram, "circles[0].pos");
-		GLint colorLoc = glGetUniformLocation(modelShader.shaderProgram, "circles[0].color");
-		GLint radLoc = glGetUniformLocation(modelShader.shaderProgram, "circles[0].rad");
-		glUniform3f(posLoc, -1.0f, 0.0f, 0.0f);
-		glUniform3f(colorLoc, 1.0f, 0.0f, 0.0f);
-		glUniform1f(radLoc, 0.7f);
-		posLoc = glGetUniformLocation(modelShader.shaderProgram, "circles[1].pos");
-		colorLoc = glGetUniformLocation(modelShader.shaderProgram, "circles[1].pos");
-		radLoc = glGetUniformLocation(modelShader.shaderProgram, "circles[1].rad");
-		glUniform3f(posLoc, 1.0f, 0.0f, 0.0f);
-		glUniform3f(colorLoc, 0.0f, 1.0f, 0.0f);
-		glUniform1f(radLoc, 0.7f);
-
-		// Now we need to draw the light object
-		lightShader.use();
-
-    modelLoc = glGetUniformLocation(lightShader.shaderProgram, "model");
-    viewLoc = glGetUniformLocation(lightShader.shaderProgram, "view");
-    projectionLoc = glGetUniformLocation(lightShader.shaderProgram, "projection");
-
-    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-    model = glm::mat4();
-    model = glm::translate(model, lightPos);
-    model = glm::scale(model, glm::vec3(0.3f));
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-
-    glBindVertexArray(lightVAO);
-		glDrawElements(GL_TRIANGLES, sphere.indicesSize, GL_UNSIGNED_INT, 0);
-		glBindVertexArray(0);
-		*/
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
