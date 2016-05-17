@@ -63,28 +63,24 @@ int main(void) {
 	glfwGetFramebufferSize(window, &width, &height);
 	glViewport(0, 0, width, height);
 
-	/*
-	GLfloat vertices[] = {
-		0.5f,  0.5f, 2.0f,  // Top Right
-		0.5f, -0.5f, 0.0f,  // Bottom Right
-		-0.5f, -0.5f, 0.0f,  // Bottom Left
-		-0.5f,  0.5f, 2.0f   // Top Left 
-	};
-	GLuint indices[] = {  // Note that we start from 0!
-		0, 1, 3,  // First Triangle
-		1, 2, 3   // Second Triangle
-	};
-	*/
-
 	// Load in a sphere object
 	Model sphere("objects/sphere.obj");
 
+	GLfloat plane[] = {
+		-6.0f, -6.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+		-6.0f, 6.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+		6.0f, -6.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+		6.0f, 6.0f, 0.0f, 0.0f, 0.0f, -1.0f
+	};
+
 	// Vertex buffer and array objects in the CPU for use with our shader
-	GLuint VBO, VAO, EBO, lightVAO;
+	GLuint VBO, VAO, EBO, lightVAO, planeVBO, planeVAO;
 	glGenVertexArrays(1, &VAO);
 	glGenVertexArrays(1, &lightVAO);
+	glGenVertexArrays(1, &planeVAO);
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
+	glGenBuffers(1, &planeVBO);
 	glBindVertexArray(VAO);
 
 	// Write our list of vertices into the VBO buffer
@@ -112,7 +108,14 @@ int main(void) {
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	// Unbind all buffers for safety
+	glBindVertexArray(planeVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(plane), plane, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(1);
+
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -152,14 +155,47 @@ int main(void) {
     glUniform3f(lightColorLoc, 1.0f, 1.0f, 1.0f);
 
 		// Copy our projection matrix information into the correct locations in memory
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
 		// Use our vertex array object
 		glBindVertexArray(VAO);
+		model = glm::translate(model, glm::vec3{1.0f, 1.0f, 1.0f});
+		model = glm::scale(model, glm::vec3{0.5f, 0.5f, 0.5f});
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawElements(GL_TRIANGLES, sphere.indicesSize, GL_UNSIGNED_INT, 0);
+
+		model = glm::mat4();
+		model = glm::translate(model, glm::vec3{-1.0f, -1.0f, -1.0f});
+		model = glm::scale(model, glm::vec3{0.5f, 0.5f, 0.5f});
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawElements(GL_TRIANGLES, sphere.indicesSize, GL_UNSIGNED_INT, 0);
+
+		glBindVertexArray(planeVAO);
+		// back
+		model = glm::mat4();
+		model = glm::translate(model, glm::vec3{0.0f, 0.0f, 3.0f});
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+		// left
+		model = glm::mat4();
+		model = glm::translate(model, glm::vec3{3.0f, 0.0f, 0.0f});
+		model = glm::rotate(model, 90.f, glm::vec3{0.0f, 1.0f, 0.0f});
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glBindVertexArray(planeVAO);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+		// right
+		model = glm::mat4();
+		model = glm::translate(model, glm::vec3(-3.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, -90.f, glm::vec3(0.0f, 1.0f, 0.0f));
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glBindVertexArray(planeVAO);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		
 		glBindVertexArray(0);
+
 
 		// Now we need to draw the light object
 		lightShader.use();
