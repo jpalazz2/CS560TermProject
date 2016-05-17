@@ -2,10 +2,11 @@
 
 precision highp float;
 uniform vec3 eye;
-varying vec3 init_ray;
+in vec3 init_ray;
 uniform float texture_weight;
 uniform float time;
 uniform vec3 light;
+uniform sampler2D tex;
 
 uniform vec3 sphere0;
 uniform float radius0;
@@ -19,7 +20,7 @@ bool sphere_intersect(in vec3 origin, in vec3 direction, in vec3 center, in floa
   // Calculate the quadratic equation solution to sphere/ray intersection
   vec3 n_dir = normalize(direction);
   float b, c;
-  float oc_diff = origin - center;
+  vec3 oc_diff = origin - center;
   b = 2 * dot(n_dir, oc_diff);
   c = dot(oc_diff, oc_diff) - radius*radius;
 
@@ -45,7 +46,7 @@ bool cube_intersect(in vec3 origin, in vec3 direction, in vec3 b_min, in vec3 b_
   vec3 t0 = min(t_min, t_max);
   vec3 t1 = max(t_min, t_max);
   float near = max(max(t0.x, t0.y), t0.z);
-  float far = min(min(t1.x, t1.y), .t1.z);
+  float far = min(min(t1.x, t1.y), t1.z);
   t = far;
   return far >= near;
 }
@@ -114,7 +115,7 @@ vec3 colorize(vec3 origin, vec3 direction, vec3 light) {
       break;
     }
 
-    direction = cosineWeightDirection(time + float(ref), normal);
+    direction = cosineWeightedDirection(time + float(ref), normal);
 
     // Calculate light contribution from hit
     vec3 to_light = light - hit;
@@ -128,6 +129,15 @@ vec3 colorize(vec3 origin, vec3 direction, vec3 light) {
   return color_acc;
 }
 
+vec3 uniformlyRandomDirection(float seed) {
+  float u = random(vec3(12.9898, 78.233, 151.7182), seed);
+  float v = random(vec3(63.7264, 10.873, 623.6736), seed);
+  float z = 1.0 - 2.0 * u;
+  float r = sqrt(1.0 - z * z);
+  float angle = 6.283185307179586 * v;
+  return vec3(r * cos(angle), r * sin(angle), z);
+}
+
 vec3 uniformlyRandomVector(float seed) {
   return uniformlyRandomDirection(seed) * sqrt(random(vec3(36.7539, 50.3658, 306.2759),
                                                       seed));
@@ -135,7 +145,7 @@ vec3 uniformlyRandomVector(float seed) {
 
 void main() {
   vec3 new_light = light + uniformlyRandomVector(time - 53.0) * 0.1;
-  vec3 texture = texture2D(texture, gl_FragCoord.xy / 512.0).rgb;
-  gl_FragColor = vec4(mix(colorize(eye, init_ray, new_light), texture, texture_weight),
+  vec3 textur = texture2D(tex, gl_FragCoord.xy / 512.0).rgb;
+  gl_FragColor = vec4(mix(colorize(eye, init_ray, new_light), textur, texture_weight),
                       1.0);
 }
