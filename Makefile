@@ -3,7 +3,7 @@ EXECUTABLE := termproject
 
 OBJ_FILES := \
 	main.o \
-	keyboard.o \
+	input.o \
 	shader.o \
 	model.o
 
@@ -21,6 +21,6 @@ depend:
 	$(CXX) $(CXXFLAGS) -MM *.cpp
 
 shader.o: shader.hpp shader.cpp
-keyboard.o: keyboard.cpp keyboard.hpp
+input.o: input.cpp input.hpp
 model.o: model.hpp model.cpp
-main.o: main.cpp keyboard.hpp shader.hpp model.hpp
+main.o: main.cpp input.hpp shader.hpp model.hpp

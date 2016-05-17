@@ -9,22 +9,27 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "keyboard.hpp"
+#include "input.hpp"
 #include "shader.hpp"
 #include "model.hpp"
 
-static Keyboard kbd{};
+static Input input{};
+
+glm::vec3 lightPos{-1.5f, 0.5f, -1.0f};
+glm::vec3 cameraPos{0.0f, 0.0f, -5.0f};
+glm::vec3 spherePos{0.0f, 0.0f, 0.0f};
 
 void errorCallback(int, const char * description) {
 	std::cerr << description << std::endl;
 }
 
 void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-	kbd.process(window, key, scancode, action, mods);
+	input.processKeyboard(window, key, scancode, action, mods);
 }
 
-glm::vec3 lightPos{-1.5f, 0.5f, -1.0f};
-glm::vec3 cameraPos{0.0f, 0.0f, -5.0f};
+void cursorCallback(GLFWwindow* window, double xpos, double ypos) {
+	input.processMouse(spherePos, window, xpos, ypos);
+}
 
 int main(void) {
 	if (!glfwInit()) {
@@ -50,6 +55,7 @@ int main(void) {
 	glewInit();
 	glfwSwapInterval(1);
 	glfwSetKeyCallback(window, keyboardCallback);
+	glfwSetCursorPosCallback(window, cursorCallback);
 
 	// Otherwise OpenGL doesn't pay attention to depths when drawing 3d objects
 	glEnable(GL_DEPTH_TEST);
@@ -129,6 +135,7 @@ int main(void) {
 
     // Tell OpenGL to use our shader
 		modelShader.use();
+		glm::vec3 sphere2Pos = glm::vec3{-1.0f, -1.0f + sin(glfwGetTime()), -1.0f};
 
     // Projection matrices
     glm::mat4 model, view, projection;
@@ -160,13 +167,13 @@ int main(void) {
 
 		// Use our vertex array object
 		glBindVertexArray(VAO);
-		model = glm::translate(model, glm::vec3{1.0f, 1.0f, 1.0f});
+		model = glm::translate(model, spherePos);
 		model = glm::scale(model, glm::vec3{0.5f, 0.5f, 0.5f});
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawElements(GL_TRIANGLES, sphere.indicesSize, GL_UNSIGNED_INT, 0);
 
 		model = glm::mat4();
-		model = glm::translate(model, glm::vec3{-1.0f, -1.0f, -1.0f});
+		model = glm::translate(model, sphere2Pos);
 		model = glm::scale(model, glm::vec3{0.5f, 0.5f, 0.5f});
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawElements(GL_TRIANGLES, sphere.indicesSize, GL_UNSIGNED_INT, 0);
