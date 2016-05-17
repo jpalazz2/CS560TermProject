@@ -23,7 +23,7 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
 }
 
 glm::vec3 lightPos{0.0f, 5.0f, -5.0f};
-glm::vec3 cameraPos{0.0f, 0.0f, -5.0f};
+glm::vec3 cameraPos{0.0f, 0.0f, 0.0f};
 
 int screenWidth = 1280, screenHeight = 800;
 
@@ -59,6 +59,7 @@ int main(void) {
 
 	// Load, compile, and link our shaders
 	Shader textureShader("shaders/texture.frag", "shaders/texture.vert");
+	Shader tracerShader("shaders/model.frag", "shaders/model.vert");
 
 	// Set a viewport
 	int width, height;
@@ -101,9 +102,29 @@ int main(void) {
 	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
 
+	GLint textureWeightLoc = glGetUniformLocation(tracerShader.shaderProgram, "texture_weight");
+	glUniform1f(textureWeightLoc, glfwGetTime() / (float) (glfwGetTime() + 1.0f));
+	GLint timeLoc = glGetUniformLocation(tracerShader.shaderProgram, "time");
+	glUniform1f(timeLoc, glfwGetTime());
+	GLint lightLoc = glGetUniformLocation(tracerShader.shaderProgram, "light");
+	glUniform3f(lightLoc, 0.4f, 0.5f, -0.6f);
+	GLint sphere0Loc = glGetUniformLocation(tracerShader.shaderProgram, "sphere0");
+	glUniform3f(sphere0Loc, 0.7f, -0.2f, 0.7f);
+	GLint radius0Loc = glGetUniformLocation(tracerShader.shaderProgram, "radius0");
+	glUniform1f(radius0Loc, 0.2f);
+	GLint sphere1Loc = glGetUniformLocation(tracerShader.shaderProgram, "sphere0");
+	glUniform3f(sphere1Loc, 0.7f, 0.4f, 0.7f);
+	GLint radius1Loc = glGetUniformLocation(tracerShader.shaderProgram, "radius0");
+	glUniform1f(radius1Loc, 0.2f);
+
 	// While the window should still be showing...
 	while (!glfwWindowShouldClose(window)) {
 		// Render our scene into the texture
+		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+		tracerShader.use();
+		glBindVertexArray(quadVAO);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
 		// Unbind our framebuffer and render our texture as a quad
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);

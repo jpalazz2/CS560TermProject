@@ -1,7 +1,7 @@
 #version 330 core
 
 precision highp float;
-uniform vec3 eye;
+vec3 eye = vec3(0.0f, 0.0f, 0.0f);
 in vec3 init_ray;
 uniform float texture_weight;
 uniform float time;
@@ -14,6 +14,8 @@ uniform vec3 sphere1;
 uniform float radius1;
 uniform vec3 room_min = vec3(-1.0, -1.0, -1.0);
 uniform vec3 room_max = vec3(1.0, 1.0, 1.0);
+
+out vec4 color;
 
 bool sphere_intersect(in vec3 origin, in vec3 direction, in vec3 center, in float radius,
                       out float t) {
@@ -145,7 +147,7 @@ vec3 uniformlyRandomVector(float seed) {
 
 void main() {
   vec3 new_light = light + uniformlyRandomVector(time - 53.0) * 0.1;
-  vec3 textur = texture2D(tex, gl_FragCoord.xy / 512.0).rgb;
-  gl_FragColor = vec4(mix(colorize(eye, init_ray, new_light), textur, texture_weight),
+  vec3 textur = texture(tex, gl_FragCoord.xy / 512.0).rgb;
+  color = vec4(mix(colorize(eye, init_ray, new_light), textur, texture_weight),
                       1.0);
 }
