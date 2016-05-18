@@ -96,6 +96,14 @@ int main(void) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
+	GLuint texture2;
+	glGenTextures(1, &texture2);
+	glBindTexture(GL_TEXTURE_2D, texture2);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, screenWidth, screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
 	// Create a framebuffer to help us render into the texture
 	GLuint framebuffer;
 	glGenFramebuffers(1, &framebuffer);
@@ -104,33 +112,32 @@ int main(void) {
 
   tracerShader.use();
 
-	GLint textureWeightLoc = glGetUniformLocation(tracerShader.shaderProgram, "texture_weight");
-	glUniform1f(textureWeightLoc, glfwGetTime() / (float) (glfwGetTime() + 1.0f));
-	GLint timeLoc = glGetUniformLocation(tracerShader.shaderProgram, "time");
-	glUniform1f(timeLoc, glfwGetTime());
 	GLint lightLoc = glGetUniformLocation(tracerShader.shaderProgram, "light");
 	glUniform3f(lightLoc, 0.4f, 0.5f, -0.6f);
 	GLint sphere0Loc = glGetUniformLocation(tracerShader.shaderProgram, "sphere0");
-	glUniform3f(sphere0Loc, -0.06f, 0.80f, 0.0f);
+	glUniform3f(sphere0Loc, -0.9f, -0.9f, -0.9f);
 	GLint radius0Loc = glGetUniformLocation(tracerShader.shaderProgram, "radius0");
 	glUniform1f(radius0Loc, 0.25f);
 	GLint sphere1Loc = glGetUniformLocation(tracerShader.shaderProgram, "sphere1");
 	glUniform3f(sphere1Loc, 0.0f, 0.25f, 0.0f);
 	GLint radius1Loc = glGetUniformLocation(tracerShader.shaderProgram, "radius1");
 	glUniform1f(radius1Loc, 0.25f);
-
 	// While the window should still be showing...
+	GLuint textures[] = {texture, texture2};
 	while (!glfwWindowShouldClose(window)) {
-    GLint textureWeightLoc = glGetUniformLocation(tracerShader.shaderProgram, "texture_weight");
-    glUniform1f(textureWeightLoc, glfwGetTime() / (float) (glfwGetTime() + 1.0f));
-    GLint timeLoc = glGetUniformLocation(tracerShader.shaderProgram, "time");
+
+		tracerShader.use();
+		GLint textureWeightLoc = glGetUniformLocation(tracerShader.shaderProgram, "texture_weight");
+		glUniform1f(textureWeightLoc, glfwGetTime() / (float) (glfwGetTime() + 1.0f));
+
+		GLint timeLoc = glGetUniformLocation(tracerShader.shaderProgram, "time");
     glUniform1f(timeLoc, glfwGetTime());
 
 		// Render our scene into the texture
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
 		glBindVertexArray(quadVAO);
-		glBindTexture(GL_TEXTURE_2D, texture);
+		glBindTexture(GL_TEXTURE_2D, textures[0]);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textures[1], 0);
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
 		// Unbind our framebuffer and render our texture as a quad
@@ -138,16 +145,16 @@ int main(void) {
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glDisable(GL_DEPTH_TEST);
+		std::swap(textures[0], textures[1]);
+
 		textureShader.use();
 		glBindVertexArray(quadVAO);
-		glBindTexture(GL_TEXTURE_2D, texture);
+		glBindTexture(GL_TEXTURE_2D, textures[0]);
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 		glBindVertexArray(0);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
-    std::cin.get();
 	}
 	glfwDestroyWindow(window);
 	glfwTerminate();
