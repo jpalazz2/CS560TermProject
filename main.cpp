@@ -115,7 +115,7 @@ int main(void) {
 	GLint lightLoc = glGetUniformLocation(tracerShader.shaderProgram, "light");
 	glUniform3f(lightLoc, 0.4f, 0.5f, -0.6f);
 	GLint sphere0Loc = glGetUniformLocation(tracerShader.shaderProgram, "sphere0");
-	glUniform3f(sphere0Loc, -0.5f, -0.5f, -0.5f);
+	glUniform3f(sphere0Loc, -0.5f, -0.7f, -0.7f);
 	GLint radius0Loc = glGetUniformLocation(tracerShader.shaderProgram, "radius0");
 	glUniform1f(radius0Loc, 0.25f);
 	GLint sphere1Loc = glGetUniformLocation(tracerShader.shaderProgram, "sphere1");
@@ -124,8 +124,8 @@ int main(void) {
 	glUniform1f(radius1Loc, 0.25f);
 
 	GLint transformLoc = glGetUniformLocation(tracerShader.shaderProgram, "transform");
-	const glm::mat4 projection(glm::perspective(90.0f, screenWidth / (float) screenHeight, 0.1f, 100.0f));
-	const glm::mat4 view = glm::lookAt(cameraPos, glm::vec3{0.5f, 0.5f, 0.0f}, glm::vec3{0.0f, 1.0f, 0.0f});
+	const glm::mat4 projection(glm::perspective(90.0f, 1.0f, 0.1f, 100.0f));
+	const glm::mat4 view = glm::lookAt(cameraPos, glm::vec3{0.3f, 0.3f, 0.0f}, glm::vec3{0.0f, 1.0f, 0.0f});
 	glm::mat4 transform = projection * view * glm::mat4(1);
 	transform = glm::transpose(transform);
 	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
