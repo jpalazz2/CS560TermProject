@@ -21,8 +21,7 @@ void errorCallback(int, const char * description) {
 void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	kbd.process(window, key, scancode, action, mods);
 }
-
-glm::vec3 lightPos{0.0f, 5.0f, -5.0f};
+glm::vec3 lightPos{0.4f, 0.5f, -0.6f};
 glm::vec3 cameraPos{0.0f, 0.0f, 2.5f};
 
 int screenWidth = 512, screenHeight = 512;
@@ -113,7 +112,7 @@ int main(void) {
   tracerShader.use();
 
 	GLint lightLoc = glGetUniformLocation(tracerShader.shaderProgram, "light");
-	glUniform3f(lightLoc, 0.4f, 0.5f, -0.6f);
+	glUniform3f(lightLoc, lightPos.x, lightPos.y, lightPos.z);
 	GLint sphere0Loc = glGetUniformLocation(tracerShader.shaderProgram, "sphere0");
 	glUniform3f(sphere0Loc, -0.5f, -0.7f, -0.7f);
 	GLint radius0Loc = glGetUniformLocation(tracerShader.shaderProgram, "radius0");
