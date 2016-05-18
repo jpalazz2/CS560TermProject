@@ -86,7 +86,7 @@ vec3 colorize(vec3 origin, vec3 direction, vec3 light) {
   vec3 color_mask = vec3(1.0);
   vec3 color_acc = vec3(0.0);
 
-  for (int ref = 0; ref < 4; ref++) {
+  for (int ref = 0; ref < 2; ref++) {
     // Intersect with everything
     float room_t;
     float sphere0_t, sphere1_t;
@@ -111,10 +111,10 @@ vec3 colorize(vec3 origin, vec3 direction, vec3 light) {
       normal = -cube_normal(hit, room_min, room_max);
       surface_color = vec3(1.0, 0.0, 0.0);
     } else if (t == sphere0_t) {
-      normal = -sphere_normal(hit, sphere0, radius0);
+      normal = sphere_normal(hit, sphere0, radius0);
       surface_color = vec3(0.0, 1.0, 0.0);
     } else if (t == sphere1_t) {
-      normal = -sphere_normal(hit, sphere1, radius1);
+      normal = sphere_normal(hit, sphere1, radius1);
       surface_color = vec3(0.0, 0.0, 1.0);
     } else {
     	normal = vec3(0.0, 1.0, 0.0);
@@ -124,13 +124,13 @@ vec3 colorize(vec3 origin, vec3 direction, vec3 light) {
     direction = cosineWeightedDirection(time + float(ref), normal);
 
     // Calculate light contribution from hit
-    vec3 to_light = light - hit;
+    vec3 to_light = hit - light;
     float diffuse = max(0.0, dot(normalize(to_light), normal));
-    // color_mask *= surface_color;
-    // color_acc += color_mask * (0.5 * diffuse);
-    color_acc = surface_color * diffuse;
+    color_mask *= surface_color;
+    color_acc += color_mask * (0.5 * diffuse);
+    color_acc += surface_color * diffuse;
 
-    //origin = hit;
+    origin = hit;
   }
 
   return color_acc;
