@@ -20,17 +20,17 @@ out vec4 color;
 bool sphere_intersect(in vec3 origin, in vec3 direction, in vec3 center, in float radius,
                       out float t) {
   // Calculate the quadratic equation solution to sphere/ray intersection
-  vec3 n_dir = normalize(direction);
-  float b, c;
+  float a, b, c;
   vec3 oc_diff = origin - center;
-  b = 2 * dot(n_dir, oc_diff);
+  a = dot(direction, direction);
+  b = 2 * dot(direction, oc_diff);
   c = dot(oc_diff, oc_diff) - radius*radius;
 
   // Check determinate
-  float det = b*b - 4*c;
+  float det = b*b - 4.0*a*c;
   if (det > 0.0) {
     float t0, t1;
-    t = (-b - sqrt(det)) / 2.0;
+    t = (-b - sqrt(det)) / (2.0 * a);
     return t > 0.0;
   } else {
     return false;
@@ -55,11 +55,11 @@ bool cube_intersect(in vec3 origin, in vec3 direction, in vec3 b_min, in vec3 b_
 
 vec3 cube_normal(vec3 surface_pt, vec3 b_min, vec3 b_max) {
   float epsilon = 0.001;
-  if (surface_pt.x > b_min.x + epsilon) return vec3(-1.0, 0.0, 0.0);
+  if (surface_pt.x < b_min.x + epsilon) return vec3(-1.0, 0.0, 0.0);
   else if (surface_pt.x > b_max.x - epsilon) return vec3(1.0, 0.0, 0.0);
-  else if (surface_pt.y > b_min.y + epsilon) return vec3(0.0, -1.0, 0.0);
-  else if (surface_pt.y > b_min.y - epsilon) return vec3(0.0, 1.0, 0.0);
-  else if (surface_pt.z > b_min.z + epsilon) return vec3(0.0, 0.0, -1.0);
+  else if (surface_pt.y < b_min.y + epsilon) return vec3(0.0, -1.0, 0.0);
+  else if (surface_pt.y > b_max.y - epsilon) return vec3(0.0, 1.0, 0.0);
+  else if (surface_pt.z < b_min.z + epsilon) return vec3(0.0, 0.0, -1.0);
   else return vec3(0.0, 0.0, 1.0);
 }
 
@@ -86,7 +86,7 @@ vec3 colorize(vec3 origin, vec3 direction, vec3 light) {
   vec3 color_mask = vec3(1.0);
   vec3 color_acc = vec3(0.0);
 
-  for (int ref = 0; ref < 2; ref++) {
+  for (int ref = 0; ref < 1; ref++) {
     // Intersect with everything
     float room_t;
     float sphere0_t, sphere1_t;
@@ -124,11 +124,15 @@ vec3 colorize(vec3 origin, vec3 direction, vec3 light) {
     direction = cosineWeightedDirection(time + float(ref), normal);
 
     // Calculate light contribution from hit
-    vec3 to_light = hit - light;
+    vec3 to_light = light - hit;
     float diffuse = max(0.0, dot(normalize(to_light), normal));
     color_mask *= surface_color;
     color_acc += color_mask * (0.5 * diffuse);
     color_acc += surface_color * diffuse;
+    // color_acc += normal;
+
+    // The diffuse value for a sphere is 1.0?
+    // The floor and back wall have the same normal
 
     origin = hit;
   }
