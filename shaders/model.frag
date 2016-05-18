@@ -17,6 +17,8 @@ uniform vec3 room_max = vec3(1.0, 1.0, 1.0);
 
 out vec4 color;
 
+int shinyValue = 32;
+
 bool sphere_intersect(in vec3 origin, in vec3 direction, in vec3 center, in float radius,
                       out float t) {
   // Calculate the quadratic equation solution to sphere/ray intersection
@@ -51,6 +53,16 @@ bool cube_intersect(in vec3 origin, in vec3 direction, in vec3 b_min, in vec3 b_
   float far = min(min(t1.x, t1.y), t1.z);
   t = far;
   return far >= near;
+}
+
+float shadow(in vec3 origin, in vec3 direction) {
+	float sphere0_t, sphere1_t;
+	bool sphere0_hit = sphere_intersect(origin, direction, sphere0, radius0, sphere0_t);
+	bool sphere1_hit = sphere_intersect(origin, direction, sphere1, radius1, sphere1_t);
+	if (sphere0_hit || sphere1_hit) {
+		return 0.0;
+	}
+	return 1.0;
 }
 
 vec3 cube_normal(vec3 surface_pt, vec3 b_min, vec3 b_max) {
@@ -119,7 +131,7 @@ vec3 colorize(vec3 origin, vec3 direction, vec3 light) {
       surface_color = vec3(0.0, 0.7, 0.0);
     } else if (t == sphere1_t) {
       normal = sphere_normal(hit, sphere1, radius1);
-      surface_color = vec3(0.0, 0.0, 0.7);
+      surface_color = vec3(0.7, 0.0, 0.7);
     } else {
     	normal = vec3(0.0, 1.0, 0.0);
     	surface_color = vec3(1.0, 0.0, 1.0);
@@ -131,7 +143,11 @@ vec3 colorize(vec3 origin, vec3 direction, vec3 light) {
     vec3 to_light = light - hit;
     float diffuse = max(0.0, dot(normalize(to_light), normal));
     color_mask *= surface_color;
-    color_acc += color_mask * (0.3 * diffuse);
+    float shadowIntensity = shadow(hit + normal * 0.0001, to_light);
+    vec3 reflected = normalize(reflect(light - hit, normal));
+    float specular = pow(max(dot(normalize(hit - origin), reflected), 0.0), shinyValue);
+
+    color_acc += color_mask * shadowIntensity * ((0.5 * diffuse) + (0.5 * specular));
 
     // The diffuse value for a sphere is 1.0?
     // The floor and back wall have the same normal
@@ -159,6 +175,5 @@ vec3 uniformlyRandomVector(float seed) {
 void main() {
   vec3 new_light = light + uniformlyRandomVector(time - 53.0) * 0.1;
   vec3 textur = texture(tex, gl_FragCoord.xy / 512.0).rgb;
-  color = vec4(mix(colorize(eye, init_ray, new_light), textur, texture_weight),
-                      1.0);
+  color = vec4(mix(colorize(eye, init_ray, new_light), textur, texture_weight), 1.0);
 }

@@ -115,11 +115,11 @@ int main(void) {
 	GLint lightLoc = glGetUniformLocation(tracerShader.shaderProgram, "light");
 	glUniform3f(lightLoc, 0.4f, 0.5f, -0.6f);
 	GLint sphere0Loc = glGetUniformLocation(tracerShader.shaderProgram, "sphere0");
-	glUniform3f(sphere0Loc, -0.7f, -0.7f, -0.9f);
+	glUniform3f(sphere0Loc, -0.5f, -0.5f, -0.5f);
 	GLint radius0Loc = glGetUniformLocation(tracerShader.shaderProgram, "radius0");
 	glUniform1f(radius0Loc, 0.25f);
 	GLint sphere1Loc = glGetUniformLocation(tracerShader.shaderProgram, "sphere1");
-	glUniform3f(sphere1Loc, 0.0f, 0.25f, 0.0f);
+	glUniform3f(sphere1Loc, -0.5f, -0.0f, -0.5f);
 	GLint radius1Loc = glGetUniformLocation(tracerShader.shaderProgram, "radius1");
 	glUniform1f(radius1Loc, 0.25f);
 
