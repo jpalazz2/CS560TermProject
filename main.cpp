@@ -122,6 +122,13 @@ int main(void) {
 	glUniform3f(sphere1Loc, 0.0f, 0.25f, 0.0f);
 	GLint radius1Loc = glGetUniformLocation(tracerShader.shaderProgram, "radius1");
 	glUniform1f(radius1Loc, 0.25f);
+
+	GLint transformLoc = glGetUniformLocation(tracerShader.shaderProgram, "transform");
+	const glm::mat4 projection(glm::perspective(90.0f, screenWidth / (float) screenHeight, 0.1f, 100.0f));
+	const glm::mat4 view = glm::lookAt(cameraPos, glm::vec3{0.5f, 0.5f, 0.0f}, glm::vec3{0.0f, 1.0f, 0.0f});
+	glm::mat4 transform = projection * view * glm::mat4(1);
+	transform = glm::transpose(transform);
+	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
 	// While the window should still be showing...
 	GLuint textures[] = {texture, texture2};
 	while (!glfwWindowShouldClose(window)) {
@@ -132,11 +139,6 @@ int main(void) {
 
 		GLint timeLoc = glGetUniformLocation(tracerShader.shaderProgram, "time");
     glUniform1f(timeLoc, glfwGetTime());
-
-    GLint transformLoc = glGetUniformLocation(tracerShader.shaderProgram, "transform");
-		const glm::mat4 projection(glm::perspective(45.0f, screenWidth / (float) screenHeight, 0.1f, 100.0f));
-		const glm::mat4 view = glm::lookAt(cameraPos, glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f, 1.0f, 0.0f});
-		//glm::mat4 transform = projection * view * glm::mat4(1);
 
 		// Render our scene into the texture
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
